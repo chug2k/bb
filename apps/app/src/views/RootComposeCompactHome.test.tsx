@@ -3,6 +3,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  getCompactHomeRestingOffset,
   getCompactHomeScrollViewportTop,
   RootComposeCompactHome,
 } from "./RootComposeCompactHome";
@@ -70,8 +71,40 @@ describe("RootComposeCompactHome", () => {
     if (!(bottomSpacer instanceof HTMLElement)) {
       throw new Error("Expected a trailing composer spacer");
     }
-    expect(viewport.style.top).toBe("310px");
+    expect(
+      screen.getByTestId("root-compose-compact-recents-offset").style.height,
+    ).toBe("314px");
     expect(bottomSpacer.style.height).toBe("188px");
+  });
+
+  it("starts the scroll viewport at the chrome row so the band scrolls away", () => {
+    vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockImplementation(
+      function (this: HTMLElement) {
+        if (this.dataset.testid === "root-compose-compact-home") return 852;
+        if (this.dataset.testid === "root-compose-compact-composer") {
+          return 188;
+        }
+        return 0;
+      },
+    );
+
+    renderCompactHome();
+
+    const viewport = screen.getByTestId("root-compose-compact-scroll-viewport");
+    expect(viewport.style.top).toBe("56px");
+  });
+
+  it("holds the resting list down with scrollable band, not a dead gap", () => {
+    expect(
+      getCompactHomeRestingOffset({ regionHeight: 852, composerHeight: 188 }),
+    ).toBe(
+      getCompactHomeScrollViewportTop({
+        regionHeight: 852,
+        composerHeight: 188,
+      }) -
+        56 +
+        MOBILE_RECENT_ROW_HEIGHT_PX,
+    );
   });
 
   it("never lifts the scroll viewport above the app chrome row", () => {

@@ -29,6 +29,20 @@ export function getCompactHomeScrollViewportTop({
   );
 }
 
+export function getCompactHomeRestingOffset({
+  regionHeight,
+  composerHeight,
+}: {
+  regionHeight: number;
+  composerHeight: number;
+}): number {
+  return (
+    getCompactHomeScrollViewportTop({ regionHeight, composerHeight }) -
+    COMPACT_HOME_CHROME_OFFSET_PX +
+    COMPACT_HOME_REST_OFFSET_PX
+  );
+}
+
 interface RootComposeCompactHomeProps {
   children: ReactNode;
   composer: ReactNode;
@@ -38,21 +52,29 @@ function useCompactHomeMetrics() {
   const regionRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLDivElement>(null);
   const scrollViewportRef = useRef<HTMLDivElement>(null);
+  const restingOffsetRef = useRef<HTMLDivElement>(null);
   const bottomSpacerRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
     const region = regionRef.current;
     const composer = composerRef.current;
     const scrollViewport = scrollViewportRef.current;
+    const restingOffset = restingOffsetRef.current;
     const bottomSpacer = bottomSpacerRef.current;
-    if (!region || !composer || !scrollViewport || !bottomSpacer) return;
+    if (!region || !composer || !scrollViewport) return;
+    if (!restingOffset || !bottomSpacer) return;
     const measure = () => {
       const composerHeight = composer.offsetHeight;
-      scrollViewport.style.top = `${getCompactHomeScrollViewportTop({
+      const previousOffset = restingOffset.offsetHeight;
+      const nextOffset = getCompactHomeRestingOffset({
         regionHeight: region.offsetHeight,
         composerHeight,
-      })}px`;
+      });
+      restingOffset.style.height = `${nextOffset}px`;
       bottomSpacer.style.height = `${composerHeight}px`;
+      if (scrollViewport.scrollTop > 0) {
+        scrollViewport.scrollTop += nextOffset - previousOffset;
+      }
     };
     measure();
     if (typeof ResizeObserver === "undefined") return;
@@ -62,15 +84,26 @@ function useCompactHomeMetrics() {
     return () => observer.disconnect();
   }, []);
 
-  return { regionRef, composerRef, scrollViewportRef, bottomSpacerRef };
+  return {
+    regionRef,
+    composerRef,
+    scrollViewportRef,
+    restingOffsetRef,
+    bottomSpacerRef,
+  };
 }
 
 export function RootComposeCompactHome({
   children,
   composer,
 }: RootComposeCompactHomeProps) {
-  const { regionRef, composerRef, scrollViewportRef, bottomSpacerRef } =
-    useCompactHomeMetrics();
+  const {
+    regionRef,
+    composerRef,
+    scrollViewportRef,
+    restingOffsetRef,
+    bottomSpacerRef,
+  } = useCompactHomeMetrics();
 
   return (
     <div
@@ -85,6 +118,7 @@ export function RootComposeCompactHome({
         style={{ top: COMPACT_HOME_CHROME_OFFSET_PX }}
       >
         <div
+          ref={restingOffsetRef}
           aria-hidden
           data-testid="root-compose-compact-recents-offset"
           style={{ height: COMPACT_HOME_REST_OFFSET_PX }}
