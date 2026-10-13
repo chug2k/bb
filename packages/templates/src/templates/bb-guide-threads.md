@@ -499,3 +499,30 @@ directories are inside that storage before removing files, including dev
 servers in nested checkouts. On macOS and Linux this uses the same SIGTERM
 grace period and SIGKILL fallback as worktree removal. Windows does not
 enumerate process working directories.
+
+Moving conversations between projects:
+
+  bb thread move <id> [other-ids...] --project <id> --environment <id> [--include-children] [--check] [--json]
+  bb thread move --self --project <id> --environment <id> --check --json
+
+    Moves existing conversations and uploaded attachments onto a ready destination
+    environment in that project, on the same machine. The next turn uses its
+    directory and project instructions. Working files are not relocated and
+    environment ownership/teardown policy is unchanged.
+    --check is read-only: inspect threads, path, and blockers before applying.
+    A preview with blockers still exits 0; applying a blocked move exits nonzero.
+    --include-children follows both parent and lifecycle-owner links, including
+    archived and hidden threads but excluding deleted ones. Other roots need
+    explicit IDs. At most 200 threads can move together.
+    Thread IDs, history, provider identities, hierarchy, visibility and pins are
+    preserved. Prompt history and attachment ownership follow the conversations.
+    Moves refuse active/queued/interactive/background work, split lifecycle
+    ownership, offline hosts, cross-machine destinations, missing/colliding
+    attachments, and moves that leave an owned workspace without live users.
+    Idle provider runtimes are released; a daemon-reported active turn stays running.
+    An active agent can preview itself, then finish; apply from a terminal or
+    another thread after it is idle. No deferred move is scheduled.
+    Repeating a completed move is a no-op. All conversation changes commit together;
+    preparation may leave unowned attachment copies for normal cleanup on failure.
+    SDK: threads.experimental_move({threadIds, projectId, environmentId,
+    includeChildren, check}); optional booleans default to false.

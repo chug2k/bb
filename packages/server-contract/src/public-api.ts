@@ -290,6 +290,8 @@ import type {
   UpdateProjectSourceRequest,
   UpdateThreadPluginMetadataRequest,
   UpdateThreadRequest,
+  MoveThreadsRequest,
+  MoveThreadsResponse,
   UpdateQueuedMessageRequest,
   UploadedPromptAttachment,
   WorkspaceFileListResponse,
@@ -412,6 +414,7 @@ import {
   updateProjectRequestSchema,
   updateProjectSourceRequestSchema,
   updateThreadRequestSchema,
+  moveThreadsRequestSchema,
 } from "./api-types.js";
 import {
   serverMoveCheckRequestSchema,
@@ -1358,6 +1361,14 @@ export const publicApiRoutes = {
         createThreadRequestSchema,
       ),
       response: jsonResponse<ThreadResponse>({ status: 201 }),
+    }),
+    move: defineRoute({
+      path: "/threads/move",
+      method: "post",
+      request: jsonRequest<EmptyInput, MoveThreadsRequest>(
+        moveThreadsRequestSchema,
+      ),
+      response: jsonResponse<MoveThreadsResponse>(),
     }),
     fork: defineRoute({
       path: "/threads/fork",

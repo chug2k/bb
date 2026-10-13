@@ -1260,6 +1260,7 @@ export const SURFACE_GROUPS: SurfaceGroup[] = [
           "Create threads, send messages, and manage projects and machines",
           "Do what the [bb CLI](cli) and the app can do",
           "Have the threads it creates attributed to the plugin",
+          "Preview and move idle conversations between projects on the same machine, preserving history and attachments with threads.experimental_move",
           "Start plugin updates in the background and follow their progress or rollback",
         ],
         apiSymbols: [
@@ -1277,6 +1278,7 @@ export const SURFACE_GROUPS: SurfaceGroup[] = [
           "PluginBbSdk.threads.queuedMessages.experimental_holdForEdit",
           "PluginBbSdk.threads.queuedMessages.experimental_releaseEditHold",
           "PluginBbSdk.threads.experimental_listDescendants",
+          "PluginBbSdk.threads.experimental_move",
         ],
         firstParty: [
           "Account Pooler [Experimental]",

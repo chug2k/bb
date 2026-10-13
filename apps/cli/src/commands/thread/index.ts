@@ -1,3 +1,4 @@
+import { registerMoveCommand } from "./move.js";
 import { registerContextCommand } from "./context.js";
 import { registerSessionStateCommands } from "./session-state.js";
 import { Command } from "commander";
@@ -27,6 +28,7 @@ export function registerThreadCommands(
   registerSessionStateCommands(thread, getUrl);
   registerShowCommand(thread, getUrl);
   registerOpenCommand(thread, getUrl);
+  registerMoveCommand(thread, getUrl);
   registerPaneCommand(thread, getUrl);
   registerOrganizationCommands(thread, getUrl);
   registerActionsCommands(thread, getUrl);

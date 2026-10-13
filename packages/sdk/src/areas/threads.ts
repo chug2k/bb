@@ -20,6 +20,8 @@ import {
 import type {
   CreateQueuedMessageRequest,
   CreateThreadRequest,
+  MoveThreadsRequest,
+  MoveThreadsResponse,
   QueuedMessageListQuery,
   EditMessageRequest,
   EditMessageResponse,
@@ -593,7 +595,11 @@ export interface ThreadQueueArea {
   list(args?: ThreadQueueListArgs): Promise<ThreadQueueListResult>;
 }
 
+export type ThreadMoveArgs = MoveThreadsRequest & { signal?: AbortSignal };
+export type ThreadMoveResult = MoveThreadsResponse;
+
 export interface ThreadsArea {
+  experimental_move(args: ThreadMoveArgs): Promise<ThreadMoveResult>;
   archive(args: ThreadActionArgs): Promise<ThreadArchiveResult>;
   archiveAll(args: ThreadActionArgs): Promise<ThreadArchiveAllResult>;
   childSummary(args: ThreadStatusArgs): Promise<ThreadChildSummaryResult>;
@@ -1624,6 +1630,15 @@ export function createThreadsArea(args: CreateSdkAreaArgs): ThreadsArea {
         transport.api.v1.threads[":id"].unpin.$post({
           param: { id: input.threadId },
         }),
+      );
+    },
+    async experimental_move(input) {
+      const { signal, ...json } = input;
+      return transport.readJson(
+        transport.api.v1.threads.move.$post(
+          { json },
+          ...signalRequestArgs(signal),
+        ),
       );
     },
     async update(input) {

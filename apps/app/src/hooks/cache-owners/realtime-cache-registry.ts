@@ -416,6 +416,10 @@ export const REALTIME_THREAD_CHANGE_REGISTRY = {
     flush: "debounced",
     dirty: [dirtyThreadListQueries, dirtyThreadDetailQueries],
   },
+  "project-changed": {
+    flush: "immediate",
+    dirty: [dirtyProjectMoveQueries, dirtyThreadDetailQueries],
+  },
   "environment-changed": {
     flush: "immediate",
     dirty: [
@@ -1266,4 +1270,16 @@ function dirtyEnvironmentProviderQueries(): QueryKey[] {
 
 function reconcilePluginFrontendBundles(): void {
   schedulePluginFrontendReconcile();
+}
+
+function dirtyProjectMoveQueries({
+  queryClient,
+}: ThreadRealtimeDirtyContext): QueryKey[] {
+  return [
+    ...getThreadListInvalidationQueryKeys({
+      queryClient,
+      projectId: undefined,
+    }),
+    ...getProjectPromptHistoryInvalidationQueryKeys({ projectId: undefined }),
+  ];
 }

@@ -1,3 +1,4 @@
+import { moveThreads } from "../../services/threads/thread-project-move.js";
 import { refreshProviderRetirement } from "../../services/environments/environment-engine.js";
 import {
   deleteQueuedThreadMessage,
@@ -239,6 +240,10 @@ export function registerThreadActionRoutes(app: Hono, deps: AppDeps): void {
     onValidationError: (msg) => new ApiError(400, "invalid_request", msg),
   });
   const routes = publicApiRoutes.threads;
+
+  post(routes.move, async (context, payload) => {
+    return context.json(await moveThreads(deps, payload));
+  });
 
   post(routes.send, async (context, payload) => {
     const thread = requirePublicThread(deps.db, context.req.param("id"));

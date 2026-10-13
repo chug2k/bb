@@ -1,6 +1,8 @@
 export const JSON_SHAPE_BY_COMMAND_PATH: Readonly<Record<string, string>> = {
   status:
     "{project: {id, name} | null, thread: {id, status, title, parentThreadId, environment: {hostId, display} | null} | null, childThreads: [{id, status, title}] | null, pendingTodos, pluginsNeedingAttention: [{id, status}], dataDir}",
+  "thread move":
+    "{moved, projectId, environmentId, path, threads: [{id, previousProjectId, previousEnvironmentId, previousPath, attachmentCount, changed}], blockers: [{threadId, message}]}    (check exits 0; inspect blockers)",
   "thread list":
     "[{id, projectId, environmentId, providerId, title, status, parentThreadId, sectionId, visibility, archivedAt, pinnedAt, createdAt, updatedAt, activity}]    (bare array; title can be null)",
   "thread show":

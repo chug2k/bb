@@ -714,6 +714,36 @@ export const deleteThreadRequestSchema = z.object({
 });
 export type DeleteThreadRequest = z.infer<typeof deleteThreadRequestSchema>;
 
+export const moveThreadsRequestSchema = z
+  .object({
+    threadIds: z.array(z.string().min(1)).min(1).max(200),
+    projectId: z.string().min(1),
+    environmentId: z.string().min(1),
+    includeChildren: z.boolean().optional(),
+    check: z.boolean().optional(),
+  })
+  .strict();
+export type MoveThreadsRequest = z.infer<typeof moveThreadsRequestSchema>;
+
+export const moveThreadsResponseSchema = z.object({
+  moved: z.boolean(),
+  projectId: z.string(),
+  environmentId: z.string(),
+  path: z.string(),
+  threads: z.array(
+    z.object({
+      id: z.string(),
+      previousProjectId: z.string(),
+      previousEnvironmentId: z.string().nullable(),
+      previousPath: z.string().nullable(),
+      attachmentCount: z.number().int().nonnegative(),
+      changed: z.boolean(),
+    }),
+  ),
+  blockers: z.array(z.object({ threadId: z.string(), message: z.string() })),
+});
+export type MoveThreadsResponse = z.infer<typeof moveThreadsResponseSchema>;
+
 export const updateThreadRequestSchema = z
   .object({
     title: z.string().min(1).nullable(),

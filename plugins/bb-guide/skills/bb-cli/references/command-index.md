@@ -171,6 +171,7 @@ move and downloads the new server's bb-app package for its service.
 - `bb thread timeline`
 - `bb thread output`
 - `bb thread open`
+- `bb thread move`
 - `bb thread pane`
 - `bb thread section`
 - `bb thread section list`

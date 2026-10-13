@@ -43,6 +43,9 @@ Fields beyond those shown exist; these are the ones scripts use.
   bb thread show <id> --json
     {thread: {id, status, title, projectId, environmentId, parentThreadId, ...}, environment: {id, hostId, path, branchName, ...} | null, pendingTodos}    (thread fields are under .thread)
 
+  bb thread move <id> --project <id> --environment <id> --check --json
+    {moved, projectId, environmentId, path, threads: [{id, previousProjectId, previousEnvironmentId, previousPath, attachmentCount, changed}], blockers: [{threadId, message}]}    (check exits 0; inspect blockers)
+
   bb thread log <id> --json
     [{id, seq, type, createdAt, threadId, scope, data}]    (bare array of raw events, oldest first; page with --after-seq <seq>); with --message: {message, before, after} of conversation rows
 

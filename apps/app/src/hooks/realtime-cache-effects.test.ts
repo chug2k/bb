@@ -553,6 +553,42 @@ describe("createRealtimeCacheEffects", () => {
     effects.dispose();
   });
 
+  it("invalidates both projects immediately when a conversation moves", () => {
+    const {
+      effects,
+      queryClient,
+      firstProjectHistoryKey,
+      secondProjectHistoryKey,
+    } = createRealtimeEffectsTestContext();
+    const source = threadListQueryKey({
+      projectId: "project-1",
+      archived: false,
+    });
+    const target = threadListQueryKey({
+      projectId: "project-2",
+      archived: false,
+    });
+    const detail = threadQueryKey("thr_1");
+    for (const key of [source, target, detail])
+      queryClient.setQueryData(key, []);
+    effects.handleChanged({
+      type: "changed",
+      entity: "thread",
+      id: "thr_1",
+      metadata: { projectId: "project-2" },
+      changes: ["project-changed"],
+    });
+    for (const key of [
+      source,
+      target,
+      detail,
+      firstProjectHistoryKey,
+      secondProjectHistoryKey,
+    ])
+      expect(queryClient.getQueryState(key)?.isInvalidated).toBe(true);
+    effects.dispose();
+  });
+
   it.each(PROJECT_PROMPT_HISTORY_THREAD_CHANGES)(
     "invalidates all cached project prompt histories for %s thread events",
     (change) => {

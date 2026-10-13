@@ -4151,3 +4151,26 @@ Stabilization requires exercising reconnect/reload, concurrent deduplication, ro
 `hosts.experimental_discoverRepos({ hostId })` asks the machine for git repositories under the user's home directory with local activity in the last 30 days, newest first, capped at 10. Each entry has `path`, `name`, `lastActivityAt`, `originUrl`, and `projectId` (the bb project already bound to that path on that machine, or null). `truncated` is true when the three-second walk budget ran out. The walk stops at each repository root, skips dot-directories, common build directories, scratch directories (`tmp`, `temp`, `tmp-*`, `Downloads`), linked worktrees, and submodules. The first-run setup guide and `bb project discover` use it. Host-daemon wire change: the `host.discover_repos` command (protocol 230).
 
 Stabilize after deciding whether depth, recency window, and limit should be caller options, and after exercising slow or network-mounted home directories and Windows hosts.
+
+## `bb.sdk.threads.experimental_move`
+
+Moves up to 200 idle conversations to an explicitly selected ready environment
+in another project on the same host. The server preserves identities, event
+history and hierarchy, copies attachment bytes without overwriting collisions,
+and atomically changes threads, prompt history and attachment ownership.
+`check` previews scope and blockers without mutations; `includeChildren` adds
+nondeleted parent descendants and lifecycle dependents, including archived and
+hidden threads. Booleans default to false. Source files and environment ownership
+are unchanged. Last-user owned-workspace moves are refused to avoid retirement.
+
+Core caller: `bb thread move`, through this SDK path and POST `/threads/move`.
+Plugins use the same method via the browser or backend bound SDK.
+
+Stabilization: confirm destination-environment policy and explicit descendant
+scope with maintainers; exercise real provider resume after idle release;
+validate whether deferred active-thread moves, owned workspace transfers and
+cross-host session migration should be separate operations. Keep read-only
+preflight, content-collision refusal, lifecycle-family integrity and atomic
+ownership changes as shared CLI/SDK contract tests. No server/daemon wire fields
+change: this reuses `thread.stop` with `intent: "release"` and respects
+`activeTurnRetained` without escalating to interrupt.

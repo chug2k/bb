@@ -1,10 +1,17 @@
 import { ApiError } from "../../errors.js";
 
 const inFlightByThreadId = new Map<string, number>();
+const movingThreadIds = new Set<string>();
 
 export class ThreadContextClearInProgressError extends ApiError {
-  constructor() {
-    super(409, "invalid_request", "Thread context is being cleared");
+  constructor(moving = false) {
+    super(
+      409,
+      "invalid_request",
+      moving
+        ? "Thread is moving to another project"
+        : "Thread context is being cleared",
+    );
   }
 }
 
@@ -15,7 +22,10 @@ async function withThreadContextMutationGuard<T>(
 ): Promise<T> {
   const inFlight = inFlightByThreadId.get(threadId) ?? 0;
   if (inFlight !== 0 && (mode === "clear" || inFlight < 0)) {
-    if (mode === "send") throw new ThreadContextClearInProgressError();
+    if (mode === "send")
+      throw new ThreadContextClearInProgressError(
+        movingThreadIds.has(threadId),
+      );
     throw new ApiError(
       409,
       "invalid_request",
@@ -45,4 +55,23 @@ export async function withThreadContextClearGuard<T>(
   work: () => Promise<T>,
 ): Promise<T> {
   return withThreadContextMutationGuard(threadId, "clear", work);
+}
+
+export async function withThreadProjectMoveGuard<T>(
+  threadIds: readonly string[],
+  work: () => Promise<T>,
+): Promise<T> {
+  async function lock(index: number): Promise<T> {
+    if (index === threadIds.length) return work();
+    const threadId = threadIds[index];
+    return withThreadContextMutationGuard(threadId, "clear", async () => {
+      movingThreadIds.add(threadId);
+      try {
+        return await lock(index + 1);
+      } finally {
+        movingThreadIds.delete(threadId);
+      }
+    });
+  }
+  return lock(0);
 }
